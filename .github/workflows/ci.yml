@@ -45,7 +45,8 @@ jobs:
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
           };" > src/config.js
-
+      - name: Tests
+        run: npm test
     services:
       mysql:
         image: mysql:8.0.29
