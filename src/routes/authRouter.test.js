@@ -30,11 +30,11 @@ async function removeUser(email){
     }
     try{
         const connection = await DB.getConnection();
-        const [UserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [email]);
+        // const [UserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [email]);
         const UserId = UserResult?.id;
-        await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [UserId]);
-        await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [UserId]);
-        await DB.query(connection, 'DELETE FROM user WHERE email = ?', [email]);
+        // await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [UserId]);
+        // await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [UserId]);
+        // await DB.query(connection, 'DELETE FROM user WHERE email = ?', [email]);
     }
     catch (error) {
         console.error('Error deleting diner user:', error);

@@ -153,16 +153,16 @@ describe('Order Router', () => {
             const connection = await DB.getConnection();
             const idsToRemove = [...menuIds]; // Create a copy of the menuIds array
 
-            for (const id of idsToRemove) {
-                if (id) {
-                    await DB.query(connection, 'DELETE FROM menu WHERE id = ?', [id]);
-                    // Remove the id from the list of menu items
-                    const index = menuIds.indexOf(id);
-                    if (index > -1) {
-                        menuIds.splice(index, 1);
-                    }
-                }
-            }
+            // for (const id of idsToRemove) {
+            //     if (id) {
+            //         await DB.query(connection, 'DELETE FROM menu WHERE id = ?', [id]);
+            //         // Remove the id from the list of menu items
+            //         const index = menuIds.indexOf(id);
+            //         if (index > -1) {
+            //             menuIds.splice(index, 1);
+            //         }
+            //     }
+            // }
     
             // Delete the franchise
             const franchiseRes = await request(app)
@@ -176,38 +176,38 @@ describe('Order Router', () => {
         }
     });
 
-    afterAll(async () => {
-        try {
-            //Get connection to the database
-            const connection = await DB.getConnection();
-            // Get the user IDs from the user table by their email
-            const [adminUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [adminUser.email]);
-            const [dinerUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [dinerUser.email]);
+    // afterAll(async () => {
+    //     try {
+    //         Get connection to the database
+    //         const connection = await DB.getConnection();
+    //         // Get the user IDs from the user table by their email
+    //         const [adminUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [adminUser.email]);
+    //         const [dinerUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [dinerUser.email]);
 
-            const adminUserId = adminUserResult?.id;
-            const dinerUserId = dinerUserResult?.id;
+    //         const adminUserId = adminUserResult?.id;
+    //         const dinerUserId = dinerUserResult?.id;
 
-            if (adminUserId) {
-                // Remove the admin user from the auth table by their user ID
-                await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [adminUserId]);
-                // Remove the admin user from the userrole table by their user ID
-                await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [adminUserId]);
-                // Remove the admin user from the user table by their email
-                await DB.query(connection, 'DELETE FROM user WHERE email = ?', [adminUser.email]);
-            }
+    //         if (adminUserId) {
+    //             // Remove the admin user from the auth table by their user ID
+    //             await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [adminUserId]);
+    //             // Remove the admin user from the userrole table by their user ID
+    //             await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [adminUserId]);
+    //             // Remove the admin user from the user table by their email
+    //             await DB.query(connection, 'DELETE FROM user WHERE email = ?', [adminUser.email]);
+    //         }
 
-            if (dinerUserId) {
-                // Remove the diner user from the auth table by their user ID
-                await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [dinerUserId]);
-                // Remove the diner user from the userrole table by their user ID
-                await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [dinerUserId]);
-                // Remove the diner user from the user table by their email
-                await DB.query(connection, 'DELETE FROM user WHERE email = ?', [dinerUser.email]);
-            }
-        } catch (error) {
-            console.error('Error in afterAll cleanup:', error);
-        }
-    });
+    //         if (dinerUserId) {
+    //             // Remove the diner user from the auth table by their user ID
+    //             await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [dinerUserId]);
+    //             // Remove the diner user from the userrole table by their user ID
+    //             await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [dinerUserId]);
+    //             // Remove the diner user from the user table by their email
+    //             await DB.query(connection, 'DELETE FROM user WHERE email = ?', [dinerUser.email]);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error in afterAll cleanup:', error);
+    //     }
+    // });
 
     test('should get the menu', async () => {
         const res = await request(app).get('/api/order/menu');
@@ -266,13 +266,13 @@ describe('Order Router', () => {
         expect(res.body.orders.length).toBeGreaterThanOrEqual(2);
     
         // Clean up orders
-        const connection = await DB.getConnection();
-        for (const order of res.body.orders) {
-            // Delete order items associated with the order
-            await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
-            // Optionally, delete the order itself if needed
-            // await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
-        }
+        // const connection = await DB.getConnection();
+        // for (const order of res.body.orders) {
+        //     // Delete order items associated with the order
+        //     await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
+        //     // Optionally, delete the order itself if needed
+        //     await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
+        // }
     });
 
     //todo: Look into why the response is always 500
@@ -287,14 +287,14 @@ describe('Order Router', () => {
         expect(res1.body).toBeInstanceOf(Object);
 
         // Clean up orders
-        const connection = await DB.getConnection();
-        const orders = await DB.query(connection, 'SELECT id FROM dinerorder WHERE franchiseId = ? AND storeId = ?', [franchiseId, storeId]);
-        for (const order of orders) {
-            // Delete order items associated with the order
-            await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
-            // Optionally, delete the order itself if needed
-            // await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
-        }
+        // const connection = await DB.getConnection();
+        // const orders = await DB.query(connection, 'SELECT id FROM dinerorder WHERE franchiseId = ? AND storeId = ?', [franchiseId, storeId]);
+        // for (const order of orders) {
+        //     // Delete order items associated with the order
+        //     await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
+        //     // Optionally, delete the order itself if needed
+        //     await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
+        // }
     });
 
 });

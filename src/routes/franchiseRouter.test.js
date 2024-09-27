@@ -119,38 +119,38 @@ describe('Franchise Router', () => {
         }
     });
 
-    afterAll(async () => {
-        try {
-            //Get connection to the database
-            const connection = await DB.getConnection();
-            // Get the user IDs from the user table by their email
-            const [adminUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [adminUser.email]);
-            const [dinerUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [dinerUser.email]);
+    // afterAll(async () => {
+    //     try {
+    //         //Get connection to the database
+    //         const connection = await DB.getConnection();
+    //         // Get the user IDs from the user table by their email
+    //         const [adminUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [adminUser.email]);
+    //         const [dinerUserResult] = await DB.query(connection, 'SELECT id FROM user WHERE email = ?', [dinerUser.email]);
 
-            const adminUserId = adminUserResult?.id;
-            const dinerUserId = dinerUserResult?.id;
+    //         const adminUserId = adminUserResult?.id;
+    //         const dinerUserId = dinerUserResult?.id;
 
-            if (adminUserId) {
-                // Remove the admin user from the auth table by their user ID
-                await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [adminUserId]);
-                // Remove the admin user from the userrole table by their user ID
-                await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [adminUserId]);
-                // Remove the admin user from the user table by their email
-                await DB.query(connection, 'DELETE FROM user WHERE email = ?', [adminUser.email]);
-            }
+    //         if (adminUserId) {
+    //             // Remove the admin user from the auth table by their user ID
+    //             await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [adminUserId]);
+    //             // Remove the admin user from the userrole table by their user ID
+    //             await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [adminUserId]);
+    //             // Remove the admin user from the user table by their email
+    //             await DB.query(connection, 'DELETE FROM user WHERE email = ?', [adminUser.email]);
+    //         }
 
-            if (dinerUserId) {
-                // Remove the diner user from the auth table by their user ID
-                await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [dinerUserId]);
-                // Remove the diner user from the userrole table by their user ID
-                await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [dinerUserId]);
-                // Remove the diner user from the user table by their email
-                await DB.query(connection, 'DELETE FROM user WHERE email = ?', [dinerUser.email]);
-            }
-        } catch (error) {
-            console.error('Error in afterAll cleanup:', error);
-        }
-    });
+    //         if (dinerUserId) {
+    //             // Remove the diner user from the auth table by their user ID
+    //             await DB.query(connection, 'DELETE FROM auth WHERE userId = ?', [dinerUserId]);
+    //             // Remove the diner user from the userrole table by their user ID
+    //             await DB.query(connection, 'DELETE FROM userrole WHERE userId = ?', [dinerUserId]);
+    //             // Remove the diner user from the user table by their email
+    //             await DB.query(connection, 'DELETE FROM user WHERE email = ?', [dinerUser.email]);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error in afterAll cleanup:', error);
+    //     }
+    // });
 
 
     test('should get all franchises', async () => {
