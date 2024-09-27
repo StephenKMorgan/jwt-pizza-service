@@ -271,7 +271,7 @@ describe('Order Router', () => {
             // Delete order items associated with the order
             await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
             // Optionally, delete the order itself if needed
-            await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
+            // await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
         }
     });
 
@@ -293,7 +293,7 @@ describe('Order Router', () => {
             // Delete order items associated with the order
             await DB.query(connection, 'DELETE FROM orderitem WHERE orderId = ?', [order.id]);
             // Optionally, delete the order itself if needed
-            await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
+            // await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
         }
     });
 
