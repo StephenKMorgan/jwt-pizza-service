@@ -150,8 +150,8 @@ describe('Order Router', () => {
             }
     
             // Remove all added menu items
-            const connection = await DB.getConnection();
-            const idsToRemove = [...menuIds]; // Create a copy of the menuIds array
+            // const connection = await DB.getConnection();
+            // const idsToRemove = [...menuIds]; // Create a copy of the menuIds array
 
             // for (const id of idsToRemove) {
             //     if (id) {
