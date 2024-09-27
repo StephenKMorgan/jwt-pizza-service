@@ -39,15 +39,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-      
-      - name: Initialize database schema
-        run: |
-          docker exec mysql-container-name mysql -uroot -ptempdbpassword -e "
-          CREATE TABLE IF NOT EXISTS pizza.userrole (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            userId INT NOT NULL,
-            role VARCHAR(255) NOT NULL
-          );
 
       - name: Write config file
         run: |

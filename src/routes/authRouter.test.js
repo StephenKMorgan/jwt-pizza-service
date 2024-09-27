@@ -77,14 +77,22 @@ describe('Auth Router', () => {
     });
 
     test('should login an existing user', async () => {
+        // Attempt to login with the correct password
         const loginRes = await request(app).put('/api/auth').send({ email: dinerUser.email, password: dinerUser.password });
         expect(loginRes.status).toBe(200);
         expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-
-        // const { password, ...user } = { ...dinerUser, roles: [{ role: 'diner' }] };
-        // expect(loginRes.body.user).toMatchObject(user);
-
-        //cleanup
+ 
+        expect(loginRes.body.user).toMatchObject({
+            id: expect.any(Number),
+            name: dinerUser.name,
+            email: dinerUser.email,
+            roles: expect.arrayContaining([
+                expect.objectContaining({
+                    role: 'diner'
+                })
+            ])
+        });
+        // Cleanup
         const logoutRes = await request(app)
             .delete('/api/auth')
             .set('Authorization', `Bearer ${loginRes.body.token}`);
