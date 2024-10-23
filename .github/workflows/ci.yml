@@ -58,7 +58,8 @@ jobs:
               url: 'https://pizza.kepelcomputing.com/',
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
-          };" > src/config.js
+            version: '$VERSION',
+          };" > config.js
 
       - name: Tests
         run: npm test
@@ -68,7 +69,7 @@ jobs:
         run: |
           version=$(date +'%Y%m%d.%H%M%S')
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          printf '{"version": "%s" }' "$version" > src/version.json
+          printf '{"version": "%s" }' "$version" > version.json
 
       - name: Update coverage
         run: |
