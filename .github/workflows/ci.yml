@@ -58,7 +58,6 @@ jobs:
               url: 'https://pizza.kepelcomputing.com/',
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
-            version: '$VERSION',
           };" > src/config.js
 
       - name: Tests
