@@ -1,8 +1,8 @@
 const app = require('./service.js');
 const metrics = require('./metrics.js');
-const orderRouter = require('./routers/orderRouter.js');
-const franchiseRouter = require('./routers/franchiseRouter.js');
-const { authRouter, setAuthUser } = require('./routers/authRouter.js');
+const orderRouter = require('./routes/orderRouter.js');
+const franchiseRouter = require('./routes/franchiseRouter.js');
+const { authRouter, setAuthUser } = require('./routes/authRouter.js');
 
 const port = process.argv[2] || 3000;
 
