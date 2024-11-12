@@ -248,14 +248,14 @@ describe('Order Router', () => {
             .post('/api/order')
             .set('Authorization', `Bearer ${authToken}`)
             .send(order1);
-        expect(res1.status).toBe(500);
+        expect(res1.status).toBe(200);
         expect(res1.body).toBeInstanceOf(Object);
     
         const res2 = await request(app)
             .post('/api/order')
             .set('Authorization', `Bearer ${authToken}`)
             .send(order2);
-        expect(res2.status).toBe(500);
+        expect(res2.status).toBe(200);
         expect(res2.body).toBeInstanceOf(Object);
     
         const res = await request(app)
@@ -283,7 +283,7 @@ describe('Order Router', () => {
             .post('/api/order')
             .set('Authorization', `Bearer ${authToken}`)
             .send(order1);
-        expect(res1.status).toBe(500);
+        expect(res1.status).toBe(200);
         expect(res1.body).toBeInstanceOf(Object);
 
         // Clean up orders
