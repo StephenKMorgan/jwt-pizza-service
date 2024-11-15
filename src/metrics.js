@@ -96,18 +96,18 @@ class Metrics {
       ];
 
 
-      console.log('\nPushing metrics:');
+      //console.log('\nPushing metrics:');
       // Add delay between metric sends to avoid rate limiting
       for (const [prefix, method, name, value] of metricsToSend) {
         await this.sendMetricToGrafana(prefix, method, name, value);
         // Add 100ms delay between sends
         await new Promise(resolve => setTimeout(resolve, 100));
-        console.log(`${prefix}.${method}.${name}: ${value}`);
+        //console.log(`${prefix}.${method}.${name}: ${value}`);
       }
 
       // Reset counters after successful send
       this.resetCounters();
-      console.log('');
+      //console.log('');
 
     } catch (error) {
       console.error('Error sending metrics:', error);
@@ -175,7 +175,7 @@ class Metrics {
           await new Promise(resolve => setTimeout(resolve, delay));
           delay *= 2; // Exponential backoff
         } else {
-          console.error('Failed to push metrics:', response.status, response.statusText);
+          //console.error('Failed to push metrics:', response.status, response.statusText);
           return;
         }
       }
