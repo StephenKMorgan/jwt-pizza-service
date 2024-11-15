@@ -333,9 +333,9 @@ class DB {
   
       // Add default admin
       const [adminCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['a@jwt.com']);
-      console.log('Admin check:', adminCheck.length);
+      //console.log('Admin check:', adminCheck.length);
       if (adminCheck.length === 0) {
-        console.log('Creating default admin...');
+        //console.log('Creating default admin...');
         const adminPassword = await bcrypt.hash('admin', 10);
         const [adminResult] = await connection.execute(
           'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
@@ -346,14 +346,14 @@ class DB {
           'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
           [adminId, Role.Admin, 0]
         );
-        console.log('Admin created with ID:', adminId);
+        //console.log('Admin created with ID:', adminId);
       }
   
       // Add default diner
       const [dinerCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['d@jwt.com']);
-      console.log('Diner check:', dinerCheck.length);
+      //console.log('Diner check:', dinerCheck.length);
       if (dinerCheck.length === 0) {
-        console.log('Creating default diner...');
+        //console.log('Creating default diner...');
         const dinerPassword = await bcrypt.hash('diner', 10);
         const [dinerResult] = await connection.execute(
           'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
@@ -364,15 +364,15 @@ class DB {
           'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
           [dinerId, Role.Diner, 0]
         );
-        console.log('Diner created with ID:', dinerId);
+        //console.log('Diner created with ID:', dinerId);
       }
   
       // Add default franchise
       const [franchiseCheck] = await connection.execute('SELECT * FROM franchise');
-      console.log('Franchise check:', franchiseCheck.length);
+      //console.log('Franchise check:', franchiseCheck.length);
       let franchiseId;
       if (franchiseCheck.length === 0) {
-        console.log('Creating default franchise...');
+        //console.log('Creating default franchise...');
         const [franchiseResult] = await connection.execute(
           'INSERT INTO franchise (name) VALUES (?)',
           ['Default Franchise']
@@ -385,36 +385,36 @@ class DB {
           'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
           [adminUser[0].id, Role.Franchisee, franchiseId]
         );
-        console.log('Franchise created with ID:', franchiseId);
+        //console.log('Franchise created with ID:', franchiseId);
       } else {
         franchiseId = franchiseCheck[0].id;
       }
   
       // Add default store
       const [storeCheck] = await connection.execute('SELECT * FROM store WHERE franchiseId = ?', [franchiseId]);
-      console.log('Store check:', storeCheck.length);
+      //console.log('Store check:', storeCheck.length);
       if (storeCheck.length === 0) {
-        console.log('Creating default store...');
+        //console.log('Creating default store...');
         const [storeResult] = await connection.execute(
           'INSERT INTO store (franchiseId, name) VALUES (?, ?)',
           [franchiseId, 'Default Store']
         );
-        console.log('Store created with ID:', storeResult.insertId);
+        //console.log('Store created with ID:', storeResult.insertId);
       }
   
       // Add default menu item
       const [menuCheck] = await connection.execute('SELECT * FROM menu');
-      console.log('Menu check:', menuCheck.length);
+      //console.log('Menu check:', menuCheck.length);
       if (menuCheck.length === 0) {
-        console.log('Creating default menu item...');
+        //console.log('Creating default menu item...');
         const [menuResult] = await connection.execute(
           'INSERT INTO menu (title, description, image, price) VALUES (?, ?, ?, ?)',
           ['Veggie', 'Veggie Pizza', 'veggie.jpg', 0.05]
         );
-        console.log('Menu item created with ID:', menuResult.insertId);
+        //console.log('Menu item created with ID:', menuResult.insertId);
       }
   
-      console.log('Database initialization complete');
+      //.log('Database initialization complete');
     } catch (err) {
       console.error('Database initialization error:', err);
       throw err;
