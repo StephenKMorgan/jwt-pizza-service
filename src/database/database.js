@@ -318,28 +318,110 @@ class DB {
   }
 
   async initializeDatabase() {
+    let connection;
     try {
-      const connection = await this._getConnection(false);
-      try {
-        const dbExists = await this.checkDatabaseExists(connection);
-        console.log(dbExists ? 'Database exists' : 'Database does not exist');
-
-        await connection.query(`CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`);
-        await connection.query(`USE ${config.db.connection.database}`);
-
-        for (const statement of dbModel.tableCreateStatements) {
-          await connection.query(statement);
-        }
-
-        if (!dbExists) {
-          const defaultAdmin = { name: '常用名字', email: 'a@jwt.com', password: 'admin', roles: [{ role: Role.Admin }] };
-          this.addUser(defaultAdmin);
-        }
-      } finally {
-        connection.end();
+      connection = await this._getConnection(false);
+      console.log('Initializing database...');
+  
+      await connection.query(`CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`);
+      await connection.query(`USE ${config.db.connection.database}`);
+  
+      // Create tables
+      for (const statement of dbModel.tableCreateStatements) {
+        await connection.query(statement);
       }
+  
+      // Add default admin
+      const [adminCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['a@jwt.com']);
+      console.log('Admin check:', adminCheck.length);
+      if (adminCheck.length === 0) {
+        console.log('Creating default admin...');
+        const adminPassword = await bcrypt.hash('admin', 10);
+        const [adminResult] = await connection.execute(
+          'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
+          ['Default Admin', 'a@jwt.com', adminPassword]
+        );
+        const adminId = adminResult.insertId;
+        await connection.execute(
+          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
+          [adminId, Role.Admin, 0]
+        );
+        console.log('Admin created with ID:', adminId);
+      }
+  
+      // Add default diner
+      const [dinerCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['d@jwt.com']);
+      console.log('Diner check:', dinerCheck.length);
+      if (dinerCheck.length === 0) {
+        console.log('Creating default diner...');
+        const dinerPassword = await bcrypt.hash('diner', 10);
+        const [dinerResult] = await connection.execute(
+          'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
+          ['Default Diner', 'd@jwt.com', dinerPassword]
+        );
+        const dinerId = dinerResult.insertId;
+        await connection.execute(
+          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
+          [dinerId, Role.Diner, 0]
+        );
+        console.log('Diner created with ID:', dinerId);
+      }
+  
+      // Add default franchise
+      const [franchiseCheck] = await connection.execute('SELECT * FROM franchise');
+      console.log('Franchise check:', franchiseCheck.length);
+      let franchiseId;
+      if (franchiseCheck.length === 0) {
+        console.log('Creating default franchise...');
+        const [franchiseResult] = await connection.execute(
+          'INSERT INTO franchise (name) VALUES (?)',
+          ['Default Franchise']
+        );
+        franchiseId = franchiseResult.insertId;
+        
+        // Link admin to franchise
+        const [adminUser] = await connection.execute('SELECT id FROM user WHERE email = ?', ['a@jwt.com']);
+        await connection.execute(
+          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
+          [adminUser[0].id, Role.Franchisee, franchiseId]
+        );
+        console.log('Franchise created with ID:', franchiseId);
+      } else {
+        franchiseId = franchiseCheck[0].id;
+      }
+  
+      // Add default store
+      const [storeCheck] = await connection.execute('SELECT * FROM store WHERE franchiseId = ?', [franchiseId]);
+      console.log('Store check:', storeCheck.length);
+      if (storeCheck.length === 0) {
+        console.log('Creating default store...');
+        const [storeResult] = await connection.execute(
+          'INSERT INTO store (franchiseId, name) VALUES (?, ?)',
+          [franchiseId, 'Default Store']
+        );
+        console.log('Store created with ID:', storeResult.insertId);
+      }
+  
+      // Add default menu item
+      const [menuCheck] = await connection.execute('SELECT * FROM menu');
+      console.log('Menu check:', menuCheck.length);
+      if (menuCheck.length === 0) {
+        console.log('Creating default menu item...');
+        const [menuResult] = await connection.execute(
+          'INSERT INTO menu (title, description, image, price) VALUES (?, ?, ?, ?)',
+          ['Veggie', 'Veggie Pizza', 'veggie.jpg', 0.05]
+        );
+        console.log('Menu item created with ID:', menuResult.insertId);
+      }
+  
+      console.log('Database initialization complete');
     } catch (err) {
-      console.error(JSON.stringify({ message: 'Error initializing database', exception: err.message, connection: config.db.connection }));
+      console.error('Database initialization error:', err);
+      throw err;
+    } finally {
+      if (connection) {
+        await connection.end();
+      }
     }
   }
 
