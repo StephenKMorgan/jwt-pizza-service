@@ -257,27 +257,27 @@ class DB {
     return '';
   }
   async query(connection, sql, params) {
-      const startTime = Date.now();
-      try {
-          const [results] = await connection.execute(sql, params);
-          const duration = Date.now() - startTime;
-          
-          // Log the database query
-          const logger = require('./logger');
-          logger.logDatabaseQuery(sql, params, duration);
-          
-          return results;
-      } catch (error) {
-          const duration = Date.now() - startTime;
-          const logger = require('./logger');
-          logger.logError(error, {
-              type: 'database',
-              query: sql,
-              params: params,
-              duration: `${duration}ms`
-          });
-          throw error;
-      }
+    const startTime = Date.now();
+    try {
+        const [results] = await connection.execute(sql, params);
+        const duration = Date.now() - startTime;
+        
+        // Log the database query
+        const logger = require('../logger');
+        logger.logDatabaseQuery(sql, params, duration);
+        
+        return results;
+    } catch (error) {
+        const duration = Date.now() - startTime;
+        const logger = require('../logger');
+        logger.logError(error, {
+            type: 'database',
+            query: sql,
+            params: params,
+            duration: `${duration}ms`
+        });
+        throw error;
+    }
   }
   async getID(connection, key, value, table) {
     const [rows] = await connection.execute(`SELECT id FROM ${table} WHERE ${key}=?`, [value]);

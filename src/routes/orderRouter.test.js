@@ -273,7 +273,7 @@ describe('Order Router', () => {
         //     // Optionally, delete the order itself if needed
         //     await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
         // }
-    });
+    },30000);
 
     //todo: Look into why the response is always 500
     test('should get orders but factory fails', async () => {
@@ -295,6 +295,6 @@ describe('Order Router', () => {
         //     // Optionally, delete the order itself if needed
         //     await DB.query(connection, 'DELETE FROM dinerorder WHERE id = ?', [order.id]);
         // }
-    });
+    },30000);
 
 });

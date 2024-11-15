@@ -67,7 +67,7 @@ class Logger {
   logDatabaseQuery(query, params, duration) {
     const logData = {
       timestamp: new Date().toISOString(),
-      query: this.sanitizeSQL(query),
+      reqBody: this.sanitizeSQL(query),
       params: this.sanitize(params),
       duration: `${duration}ms`
     };
