@@ -1,6 +1,7 @@
 const express = require('express');
 const expressWs = require('express-ws');
 const metrics = require('./metrics');
+const logger = require('./logger');
 const { authRouter, setAuthUser } = require('./routes/authRouter.js');
 const orderRouter = require('./routes/orderRouter.js');
 const franchiseRouter = require('./routes/franchiseRouter.js');
@@ -10,9 +11,13 @@ const config = require('./config.js');
 const app = express();
 expressWs(app);
 
+app.set('trust proxy', true);
 // Basic middleware
 app.use(express.json());
 app.use(setAuthUser);
+
+// Add logging middleware
+app.use(logger.httpLogger);
 
 // CORS middleware
 app.use((req, res, next) => {
@@ -114,7 +119,12 @@ app.use('*', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  res.status(err.statusCode ?? 500).json({ message: err.message, stack: err.stack });
+  logger.logError(err, { 
+    path: req.path, 
+    method: req.method, 
+    body: req.body 
+  });
+  res.status(err.statusCode ?? 500).json({ message: err.message });
   next();
 });
 
