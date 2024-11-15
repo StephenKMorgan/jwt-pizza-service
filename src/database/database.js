@@ -8,7 +8,6 @@ class DB {
   constructor() {
     this.initialized = this.initializeDatabase();
   }
-
   async getMenu() {
     const connection = await this.getConnection();
     try {
@@ -18,7 +17,6 @@ class DB {
       connection.end();
     }
   }
-
   async addMenuItem(item) {
     const connection = await this.getConnection();
     try {
@@ -28,13 +26,12 @@ class DB {
       connection.end();
     }
   }
-
   async addUser(user) {
     const connection = await this.getConnection();
     try {
-      user.password = await bcrypt.hash(user.password, 10);
+      const hashedPassword = await bcrypt.hash(user.password, 10);
 
-      const userResult = await this.query(connection, `INSERT INTO user (name, email, password) VALUES (?, ?, ?)`, [user.name, user.email, user.password]);
+      const userResult = await this.query(connection, `INSERT INTO user (name, email, password) VALUES (?, ?, ?)`, [user.name, user.email, hashedPassword]);
       const userId = userResult.insertId;
       for (const role of user.roles) {
         switch (role.role) {
@@ -54,7 +51,6 @@ class DB {
       connection.end();
     }
   }
-
   async getUser(email, password) {
     const connection = await this.getConnection();
     try {
@@ -63,18 +59,15 @@ class DB {
       if (!user || !(await bcrypt.compare(password, user.password))) {
         throw new StatusCodeError('unknown user', 404);
       }
-
       const roleResult = await this.query(connection, `SELECT * FROM userRole WHERE userId=?`, [user.id]);
       const roles = roleResult.map((r) => {
         return { objectId: r.objectId || undefined, role: r.role };
       });
-
       return { ...user, roles: roles, password: undefined };
     } finally {
       connection.end();
     }
   }
-
   async updateUser(userId, email, password) {
     const connection = await this.getConnection();
     try {
@@ -95,7 +88,6 @@ class DB {
       connection.end();
     }
   }
-
   async loginUser(userId, token) {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
@@ -105,7 +97,6 @@ class DB {
       connection.end();
     }
   }
-
   async isLoggedIn(token) {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
@@ -116,7 +107,6 @@ class DB {
       connection.end();
     }
   }
-
   async logoutUser(token) {
     token = this.getTokenSignature(token);
     const connection = await this.getConnection();
@@ -126,7 +116,6 @@ class DB {
       connection.end();
     }
   }
-
   async getOrders(user, page = 1) {
     const connection = await this.getConnection();
     try {
@@ -141,7 +130,6 @@ class DB {
       connection.end();
     }
   }
-
   async addDinerOrder(user, order) {
     const connection = await this.getConnection();
     try {
@@ -156,7 +144,6 @@ class DB {
       connection.end();
     }
   }
-
   async createFranchise(franchise) {
     const connection = await this.getConnection();
     try {
@@ -168,20 +155,16 @@ class DB {
         admin.id = adminUser[0].id;
         admin.name = adminUser[0].name;
       }
-
       const franchiseResult = await this.query(connection, `INSERT INTO franchise (name) VALUES (?)`, [franchise.name]);
       franchise.id = franchiseResult.insertId;
-
       for (const admin of franchise.admins) {
         await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [admin.id, Role.Franchisee, franchise.id]);
       }
-
       return franchise;
     } finally {
       connection.end();
     }
   }
-
   async deleteFranchise(franchiseId) {
     const connection = await this.getConnection();
     try {
@@ -199,7 +182,6 @@ class DB {
       connection.end();
     }
   }
-
   async getFranchises(authUser) {
     const connection = await this.getConnection();
     try {
@@ -216,7 +198,6 @@ class DB {
       connection.end();
     }
   }
-
   async getUserFranchises(userId) {
     const connection = await this.getConnection();
     try {
@@ -224,7 +205,6 @@ class DB {
       if (franchiseIds.length === 0) {
         return [];
       }
-
       franchiseIds = franchiseIds.map((v) => v.objectId);
       const franchises = await this.query(connection, `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`);
       for (const franchise of franchises) {
@@ -235,24 +215,20 @@ class DB {
       connection.end();
     }
   }
-
   async getFranchise(franchise) {
     const connection = await this.getConnection();
     try {
       franchise.admins = await this.query(connection, `SELECT u.id, u.name, u.email FROM userRole AS ur JOIN user AS u ON u.id=ur.userId WHERE ur.objectId=? AND ur.role='franchisee'`, [franchise.id]);
-
       franchise.stores = await this.query(
         connection,
         `SELECT s.id, s.name, COALESCE(SUM(oi.price), 0) AS totalRevenue FROM dinerOrder AS do JOIN orderItem AS oi ON do.id=oi.orderId RIGHT JOIN store AS s ON s.id=do.storeId WHERE s.franchiseId=? GROUP BY s.id`,
         [franchise.id]
       );
-
       return franchise;
     } finally {
       connection.end();
     }
   }
-
   async createStore(franchiseId, store) {
     const connection = await this.getConnection();
     try {
@@ -262,7 +238,6 @@ class DB {
       connection.end();
     }
   }
-
   async deleteStore(franchiseId, storeId) {
     const connection = await this.getConnection();
     try {
@@ -271,11 +246,9 @@ class DB {
       connection.end();
     }
   }
-
   getOffset(currentPage = 1, listPerPage) {
     return (currentPage - 1) * [listPerPage];
   }
-
   getTokenSignature(token) {
     const parts = token.split('.');
     if (parts.length > 2) {
@@ -283,12 +256,10 @@ class DB {
     }
     return '';
   }
-
   async query(connection, sql, params) {
     const [results] = await connection.execute(sql, params);
     return results;
   }
-
   async getID(connection, key, value, table) {
     const [rows] = await connection.execute(`SELECT id FROM ${table} WHERE ${key}=?`, [value]);
     if (rows.length > 0) {
@@ -296,13 +267,11 @@ class DB {
     }
     throw new Error('No ID found');
   }
-
   async getConnection() {
     // Make sure the database is initialized before trying to get a connection.
     await this.initialized;
     return this._getConnection();
   }
-
   async _getConnection(setUse = true) {
     const connection = await mysql.createConnection({
       host: config.db.connection.host,
@@ -316,122 +285,38 @@ class DB {
     }
     return connection;
   }
-
   async initializeDatabase() {
-    let connection;
     try {
-      connection = await this._getConnection(false);
-      console.log('Initializing database...');
-  
-      await connection.query(`CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`);
-      await connection.query(`USE ${config.db.connection.database}`);
-  
-      // Create tables
-      for (const statement of dbModel.tableCreateStatements) {
-        await connection.query(statement);
+      const connection = await this._getConnection(false);
+      try {
+        const dbExists = await this.checkDatabaseExists(connection);
+        console.log(dbExists ? 'Database exists' : 'Database does not exist, creating it');
+
+        await connection.query(`CREATE DATABASE IF NOT EXISTS ${config.db.connection.database}`);
+        await connection.query(`USE ${config.db.connection.database}`);
+
+        if (!dbExists) {
+          console.log('Successfully created database');
+        }
+
+        for (const statement of dbModel.tableCreateStatements) {
+          await connection.query(statement);
+        }
+        if (!dbExists) {
+          const defaultAdmin = { name: '常用名字', email: 'a@jwt.com', password: 'admin', roles: [{ role: Role.Admin }] };
+          this.addUser(defaultAdmin);
+        }
+      } finally {
+        connection.end();
       }
-  
-      // Add default admin
-      const [adminCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['a@jwt.com']);
-      //console.log('Admin check:', adminCheck.length);
-      if (adminCheck.length === 0) {
-        //console.log('Creating default admin...');
-        const adminPassword = await bcrypt.hash('admin', 10);
-        const [adminResult] = await connection.execute(
-          'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
-          ['Default Admin', 'a@jwt.com', adminPassword]
-        );
-        const adminId = adminResult.insertId;
-        await connection.execute(
-          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
-          [adminId, Role.Admin, 0]
-        );
-        //console.log('Admin created with ID:', adminId);
-      }
-  
-      // Add default diner
-      const [dinerCheck] = await connection.execute('SELECT * FROM user WHERE email = ?', ['d@jwt.com']);
-      //console.log('Diner check:', dinerCheck.length);
-      if (dinerCheck.length === 0) {
-        //console.log('Creating default diner...');
-        const dinerPassword = await bcrypt.hash('diner', 10);
-        const [dinerResult] = await connection.execute(
-          'INSERT INTO user (name, email, password) VALUES (?, ?, ?)',
-          ['Default Diner', 'd@jwt.com', dinerPassword]
-        );
-        const dinerId = dinerResult.insertId;
-        await connection.execute(
-          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
-          [dinerId, Role.Diner, 0]
-        );
-        //console.log('Diner created with ID:', dinerId);
-      }
-  
-      // Add default franchise
-      const [franchiseCheck] = await connection.execute('SELECT * FROM franchise');
-      //console.log('Franchise check:', franchiseCheck.length);
-      let franchiseId;
-      if (franchiseCheck.length === 0) {
-        //console.log('Creating default franchise...');
-        const [franchiseResult] = await connection.execute(
-          'INSERT INTO franchise (name) VALUES (?)',
-          ['Default Franchise']
-        );
-        franchiseId = franchiseResult.insertId;
-        
-        // Link admin to franchise
-        const [adminUser] = await connection.execute('SELECT id FROM user WHERE email = ?', ['a@jwt.com']);
-        await connection.execute(
-          'INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)',
-          [adminUser[0].id, Role.Franchisee, franchiseId]
-        );
-        //console.log('Franchise created with ID:', franchiseId);
-      } else {
-        franchiseId = franchiseCheck[0].id;
-      }
-  
-      // Add default store
-      const [storeCheck] = await connection.execute('SELECT * FROM store WHERE franchiseId = ?', [franchiseId]);
-      //console.log('Store check:', storeCheck.length);
-      if (storeCheck.length === 0) {
-        //console.log('Creating default store...');
-        //const [storeResult] = 
-        await connection.execute(
-          'INSERT INTO store (franchiseId, name) VALUES (?, ?)',
-          [franchiseId, 'Default Store']
-        );
-        //console.log('Store created with ID:', storeResult.insertId);
-      }
-  
-      // Add default menu item
-      const [menuCheck] = await connection.execute('SELECT * FROM menu');
-      //console.log('Menu check:', menuCheck.length);
-      if (menuCheck.length === 0) {
-        //console.log('Creating default menu item...');
-        //const [menuResult] = 
-        await connection.execute(
-          'INSERT INTO menu (title, description, image, price) VALUES (?, ?, ?, ?)',
-          ['Veggie', 'Veggie Pizza', 'veggie.jpg', 0.05]
-        );
-        //console.log('Menu item created with ID:', menuResult.insertId);
-      }
-  
-      //.log('Database initialization complete');
     } catch (err) {
-      console.error('Database initialization error:', err);
-      throw err;
-    } finally {
-      if (connection) {
-        await connection.end();
-      }
+      console.error(JSON.stringify({ message: 'Error initializing database', exception: err.message, connection: config.db.connection }));
     }
   }
-
   async checkDatabaseExists(connection) {
     const [rows] = await connection.execute(`SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?`, [config.db.connection.database]);
     return rows.length > 0;
   }
 }
-
 const db = new DB();
 module.exports = { Role, DB: db };

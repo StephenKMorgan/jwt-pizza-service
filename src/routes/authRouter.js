@@ -3,9 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
-
 const authRouter = express.Router();
-
 authRouter.endpoints = [
   {
     method: 'POST',
@@ -38,7 +36,6 @@ authRouter.endpoints = [
     response: { message: 'logout successful' },
   },
 ];
-
 async function setAuthUser(req, res, next) {
   const token = readAuthToken(req);
   if (token) {
@@ -54,7 +51,6 @@ async function setAuthUser(req, res, next) {
   }
   next();
 }
-
 // Authenticate token
 authRouter.authenticateToken = (req, res, next) => {
   if (!req.user) {
@@ -62,7 +58,6 @@ authRouter.authenticateToken = (req, res, next) => {
   }
   next();
 };
-
 // register
 authRouter.post(
   '/',
@@ -76,7 +71,6 @@ authRouter.post(
     res.json({ user: user, token: auth });
   })
 );
-
 // login
 authRouter.put(
   '/',
@@ -87,17 +81,15 @@ authRouter.put(
     res.json({ user: user, token: auth });
   })
 );
-
 // logout
 authRouter.delete(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    clearAuth(req);
+    await clearAuth(req);
     res.json({ message: 'logout successful' });
   })
 );
-
 // updateUser
 authRouter.put(
   '/:userId',
@@ -109,25 +101,21 @@ authRouter.put(
     if (user.id !== userId && !user.isRole(Role.Admin)) {
       return res.status(403).json({ message: 'unauthorized' });
     }
-
     const updatedUser = await DB.updateUser(userId, email, password);
     res.json(updatedUser);
   })
 );
-
 async function setAuth(user) {
   const token = jwt.sign(user, config.jwtSecret);
   await DB.loginUser(user.id, token);
   return token;
 }
-
 async function clearAuth(req) {
   const token = readAuthToken(req);
   if (token) {
     await DB.logoutUser(token);
   }
 }
-
 function readAuthToken(req) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
@@ -135,5 +123,4 @@ function readAuthToken(req) {
   }
   return null;
 }
-
 module.exports = { authRouter, setAuthUser };
