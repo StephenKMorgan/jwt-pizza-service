@@ -395,7 +395,8 @@ class DB {
       //console.log('Store check:', storeCheck.length);
       if (storeCheck.length === 0) {
         //console.log('Creating default store...');
-        const [storeResult] = await connection.execute(
+        //const [storeResult] = 
+        await connection.execute(
           'INSERT INTO store (franchiseId, name) VALUES (?, ?)',
           [franchiseId, 'Default Store']
         );
@@ -407,7 +408,8 @@ class DB {
       //console.log('Menu check:', menuCheck.length);
       if (menuCheck.length === 0) {
         //console.log('Creating default menu item...');
-        const [menuResult] = await connection.execute(
+        //const [menuResult] = 
+        await connection.execute(
           'INSERT INTO menu (title, description, image, price) VALUES (?, ?, ?, ?)',
           ['Veggie', 'Veggie Pizza', 'veggie.jpg', 0.05]
         );
