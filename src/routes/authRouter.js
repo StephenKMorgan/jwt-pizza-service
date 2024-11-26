@@ -69,6 +69,14 @@ authRouter.authenticateToken = (req, res, next) => {
   }
   next();
 };
+// Emergency chaos disable - no auth required
+authRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
 // chaos
 authRouter.put(
   '/chaos/:state',
@@ -79,14 +87,6 @@ authRouter.put(
     }
 
     enableChaos = req.params.state === 'true';
-    res.json({ chaos: enableChaos });
-  })
-);
-// Emergency chaos disable - no auth required
-authRouter.put(
-  '/chaos/disable',
-  asyncHandler(async (req, res) => {
-    enableChaos = false;
     res.json({ chaos: enableChaos });
   })
 );

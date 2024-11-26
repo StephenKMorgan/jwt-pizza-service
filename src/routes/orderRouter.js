@@ -49,6 +49,14 @@ orderRouter.endpoints = [
 ];
 
 let enableChaos = false;
+// Emergency chaos disable - no auth required
+orderRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
 // enableChaos
 orderRouter.put(
   '/chaos/:state',
@@ -59,14 +67,6 @@ orderRouter.put(
     }
 
     enableChaos = req.params.state === 'true';
-    res.json({ chaos: enableChaos });
-  })
-);
-// Emergency chaos disable - no auth required
-orderRouter.put(
-  '/chaos/disable',
-  asyncHandler(async (req, res) => {
-    enableChaos = false;
     res.json({ chaos: enableChaos });
   })
 );
