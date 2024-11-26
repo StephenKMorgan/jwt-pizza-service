@@ -61,6 +61,15 @@ async function setAuthUser(req, res, next) {
   }
   next();
 }
+
+// Authenticate token
+authRouter.authenticateToken = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).send({ message: 'unauthorized' });
+  }
+  next();
+};
+// chaos
 authRouter.put(
   '/chaos/:state',
   authRouter.authenticateToken,
@@ -73,14 +82,6 @@ authRouter.put(
     res.json({ chaos: enableChaos });
   })
 );
-
-// Authenticate token
-authRouter.authenticateToken = (req, res, next) => {
-  if (!req.user) {
-    return res.status(401).send({ message: 'unauthorized' });
-  }
-  next();
-};
 // register
 authRouter.post(
   '/',

@@ -49,7 +49,7 @@ orderRouter.endpoints = [
 ];
 
 let enableChaos = false;
-
+// enableChaos
 orderRouter.put(
   '/chaos/:state',
   authRouter.authenticateToken,
