@@ -38,12 +38,37 @@ orderRouter.endpoints = [
     example: `curl -X POST localhost:3000/api/order -H 'Content-Type: application/json' -d '{"franchiseId": 1, "storeId":1, "items":[{ "menuId": 1, "description": "Veggie", "price": 0.05 }]}'  -H 'Authorization: Bearer tttttt'`,
     response: { order: { franchiseId: 1, storeId: 1, items: [{ menuId: 1, description: 'Veggie', price: 0.05 }], id: 1 }, jwt: '1111111111' },
   },
+  {
+    method: 'PUT',
+    path: '/api/order/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable or disable chaos',
+    example: `curl -X PUT localhost:3000/api/order/chaos/true -H 'Authorization'`,
+    response: { chaos: true },
+  }
 ];
 
+let enableChaos = false;
+
+orderRouter.put(
+  '/chaos/:state',
+  authRouter.authenticateToken,
+  asyncHandler(async (req, res) => {
+    if (!req.user.isRole(Role.Admin)) {
+      throw new StatusCodeError('unknown endpoint', 404);
+    }
+
+    enableChaos = req.params.state === 'true';
+    res.json({ chaos: enableChaos });
+  })
+);
 // getMenu
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
+    if (enableChaos) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
     res.send(await DB.getMenu());
   })
 );

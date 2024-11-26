@@ -35,7 +35,17 @@ authRouter.endpoints = [
     example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
     response: { message: 'logout successful' },
   },
+  {
+    method: 'PUT',
+    path : '/api/auth/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable or disable chaos',
+    example: `curl -X PUT localhost:3000/api/auth/chaos`,
+    response: { chaos: true}
+  },
 ];
+let enableChaos = false;
+
 async function setAuthUser(req, res, next) {
   const token = readAuthToken(req);
   if (token) {
@@ -51,6 +61,19 @@ async function setAuthUser(req, res, next) {
   }
   next();
 }
+authRouter.put(
+  '/chaos/:state',
+  authRouter.authenticateToken,
+  asyncHandler(async (req, res) => {
+    if (!req.user.isRole(Role.Admin)) {
+      throw new StatusCodeError('unknown endpoint', 404);
+    }
+
+    enableChaos = req.params.state === 'true';
+    res.json({ chaos: enableChaos });
+  })
+);
+
 // Authenticate token
 authRouter.authenticateToken = (req, res, next) => {
   if (!req.user) {
@@ -63,6 +86,9 @@ authRouter.post(
   '/',
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
+    if (enableChaos) {
+      return res.status(500).json({ message: 'chaos monkey' });
+    }
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'name, email, and password are required' });
     }
@@ -75,6 +101,10 @@ authRouter.post(
 authRouter.put(
   '/',
   asyncHandler(async (req, res) => {
+    if (enableChaos) {
+      //sleep for 30 seconds
+      await new Promise((resolve) => setTimeout(resolve, 30000));
+    }
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
