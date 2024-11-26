@@ -62,6 +62,14 @@ orderRouter.put(
     res.json({ chaos: enableChaos });
   })
 );
+// Emergency chaos disable - no auth required
+orderRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
 // getMenu
 orderRouter.get(
   '/menu',

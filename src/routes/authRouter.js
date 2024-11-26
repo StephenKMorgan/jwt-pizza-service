@@ -82,6 +82,14 @@ authRouter.put(
     res.json({ chaos: enableChaos });
   })
 );
+// Emergency chaos disable - no auth required
+authRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
 // register
 authRouter.post(
   '/',
