@@ -75,7 +75,7 @@ orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
     if (enableChaos) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 30000));
     }
     res.send(await DB.getMenu());
   })
