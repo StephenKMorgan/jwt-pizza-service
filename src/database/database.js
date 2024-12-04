@@ -285,15 +285,13 @@ class DB {
     return '';
   }
 
-sanitizeValue(value) {
-  if (typeof value === 'string') {
-    // Remove common SQL injection patterns
-    return value.replace(/['";\\]/g, '')
-              .replace(/--/g, '')
-              .replace(/\b(UNION|SELECT|INSERT|DELETE|DROP|UPDATE|EXEC)\b/gi, '');
+  sanitizeValue(value) {
+    if (typeof value === 'string') {
+      // Only escape special characters that could break queries
+      return value.replace(/['";\\]/g, '');
+    }
+    return value;
   }
-  return value;
-}
 
 async query(connection, sql, params) {
   const startTime = Date.now();

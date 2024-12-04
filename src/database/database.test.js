@@ -7,17 +7,31 @@ function randomName() {
 
 
 describe('Database', () => {
-    test('dummy test', () => {
-        expect(1).toBe(1);
-    });
-
     test('getUser should throw error if user not found', async () => {
         const email = randomName() + '@database.com';
         const password = 'toomanysecrets';
-        try {
-            await DB.getUser(email, password);
-        } catch (error) {
-            expect(error.message).toBe('unknown user');
-        }
+        
+        await expect(DB.getUser(email, password))
+            .rejects
+            .toThrow('unknown user');
+    });
+
+    test('getUser should throw error if password incorrect', async () => {
+        // First create a user
+        const email = randomName() + '@database.com';
+        const name = 'Test User';
+        const password = 'correctpassword';
+        
+        await DB.addUser({
+            name,
+            email,
+            password,
+            roles: [{ role: 'diner' }]
+        });
+
+        // Try to login with wrong password
+        await expect(DB.getUser(email, 'wrongpassword'))
+            .rejects
+            .toThrow('unknown user');
     });
 });
