@@ -145,7 +145,11 @@ authRouter.put(
   })
 );
 async function setAuth(user) {
-  const token = jwt.sign(user, config.jwtSecret);
+
+  const token = jwt.sign(user, config.jwtSecret, {
+    algorithm: 'HS256',
+    expiresIn: '1h'
+  });
   await DB.loginUser(user.id, token);
   return token;
 }
