@@ -284,7 +284,7 @@ class DB {
     }
     return '';
   }
-// Helper for sanitizing inputs
+
 sanitizeValue(value) {
   if (typeof value === 'string') {
     // Remove common SQL injection patterns
@@ -300,7 +300,7 @@ async query(connection, sql, params) {
   const queryTimeout = 5000; // 5 seconds
 
   // Sanitize inputs
-  const sanitizedSql = sanitizeValue(sql);
+  const sanitizedSql = this.sanitizeValue(sql);
   const sanitizedParams = Array.isArray(params) 
     ? params.map(sanitizeValue)
     : params;
