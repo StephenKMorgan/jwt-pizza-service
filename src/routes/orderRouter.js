@@ -131,9 +131,9 @@ orderRouter.post(
         throw new StatusCodeError(`Item ${item.menuId} not on menu`, 400);
       }
       // Verify description matches
-      if (menuItem.description !== item.description) {
-        throw new StatusCodeError(`Invalid description for menu item ${item.menuId}`, 400);
-      }
+      // if (menuItem.description !== item.description) {
+      //   throw new StatusCodeError(`Invalid description for menu item ${item.menuId}`, 400);
+      // }
       // Compare price with small tolerance for floating point
       if (Math.abs(menuItem.price - item.price) > 0.000001) {
         throw new StatusCodeError('Price mismatch detected', 400); 
