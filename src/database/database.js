@@ -71,17 +71,18 @@ class DB {
   async updateUser(userId, email, password) {
     const connection = await this.getConnection();
     try {
-      const params = [];
+      if (email) {
+        await this.query(connection, 
+          'UPDATE user SET email = ? WHERE id = ?',
+          [email, userId]
+        );
+      }
       if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        params.push(`password='${hashedPassword}'`);
-      }
-      if (email) {
-        params.push(`email='${email}'`);
-      }
-      if (params.length > 0) {
-        const query = `UPDATE user SET ${params.join(', ')} WHERE id=${userId}`;
-        await this.query(connection, query);
+        await this.query(connection, 
+          'UPDATE user SET password = ? WHERE id = ?',
+          [hashedPassword, userId]
+        );
       }
       return this.getUser(email, password);
     } finally {
@@ -119,12 +120,24 @@ class DB {
   async getOrders(user, page = 1) {
     const connection = await this.getConnection();
     try {
-      const offset = this.getOffset(page, config.db.listPerPage);
-      const orders = await this.query(connection, `SELECT id, franchiseId, storeId, date FROM dinerOrder WHERE dinerId=? LIMIT ${offset},${config.db.listPerPage}`, [user.id]);
+      const limit = parseInt(config.db.listPerPage);
+      const offset = this.getOffset(page, limit);
+      
+      const orders = await this.query(
+        connection,
+        'SELECT id, franchiseId, storeId, date FROM dinerOrder WHERE dinerId = ? LIMIT ? OFFSET ?',
+        [user.id, limit, offset]
+      );
+      
       for (const order of orders) {
-        let items = await this.query(connection, `SELECT id, menuId, description, price FROM orderItem WHERE orderId=?`, [order.id]);
+        const items = await this.query(
+          connection,
+          'SELECT id, menuId, description, price FROM orderItem WHERE orderId = ?',
+          [order.id]
+        );
         order.items = items;
       }
+      
       return { dinerId: user.id, orders: orders, page };
     } finally {
       connection.end();
@@ -201,12 +214,25 @@ class DB {
   async getUserFranchises(userId) {
     const connection = await this.getConnection();
     try {
-      let franchiseIds = await this.query(connection, `SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?`, [userId]);
-      if (franchiseIds.length === 0) {
+      const roleResults = await this.query(
+        connection, 
+        'SELECT objectId FROM userRole WHERE role = ? AND userId = ?',
+        ['franchisee', userId]
+      );
+      
+      if (roleResults.length === 0) {
         return [];
       }
-      franchiseIds = franchiseIds.map((v) => v.objectId);
-      const franchises = await this.query(connection, `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`);
+      
+      const franchiseIds = roleResults.map(v => v.objectId);
+      const placeholders = franchiseIds.map(() => '?').join(',');
+      
+      const franchises = await this.query(
+        connection,
+        `SELECT id, name FROM franchise WHERE id IN (${placeholders})`,
+        franchiseIds
+      );
+      
       for (const franchise of franchises) {
         await this.getFranchise(franchise);
       }
@@ -247,7 +273,9 @@ class DB {
     }
   }
   getOffset(currentPage = 1, listPerPage) {
-    return (currentPage - 1) * [listPerPage];
+    const page = Math.max(1, parseInt(currentPage));
+    const limit = parseInt(listPerPage);
+    return (page - 1) * limit;
   }
   getTokenSignature(token) {
     const parts = token.split('.');
@@ -256,35 +284,72 @@ class DB {
     }
     return '';
   }
-  async query(connection, sql, params) {
-    const startTime = Date.now();
-    try {
-        const [results] = await connection.execute(sql, params);
-        const duration = Date.now() - startTime;
-        
-        // Log the database query
-        const logger = require('../logger');
-        logger.logDatabaseQuery(sql, params, duration);
-        
-        return results;
-    } catch (error) {
-        const duration = Date.now() - startTime;
-        const logger = require('../logger');
-        logger.logError(error, {
-            type: 'database',
-            query: sql,
-            params: params,
-            duration: `${duration}ms`
-        });
-        throw error;
-    }
+// Helper for sanitizing inputs
+sanitizeValue(value) {
+  if (typeof value === 'string') {
+    // Remove common SQL injection patterns
+    return value.replace(/['";\\]/g, '')
+              .replace(/--/g, '')
+              .replace(/\b(UNION|SELECT|INSERT|DELETE|DROP|UPDATE|EXEC)\b/gi, '');
   }
+  return value;
+}
+
+async query(connection, sql, params) {
+  const startTime = Date.now();
+  const queryTimeout = 5000; // 5 seconds
+
+  // Sanitize inputs
+  const sanitizedSql = sanitizeValue(sql);
+  const sanitizedParams = Array.isArray(params) 
+    ? params.map(sanitizeValue)
+    : params;
+
+  try {
+    // Create timeout promise
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Query timeout')), queryTimeout)
+    );
+
+    // Execute query with timeout
+    const [results] = await Promise.race([
+      connection.execute(sanitizedSql, sanitizedParams),
+      timeoutPromise
+    ]);
+
+    const duration = Date.now() - startTime;
+    
+    // Log successful query
+    const logger = require('../logger');
+    logger.logDatabaseQuery(sanitizedSql, sanitizedParams, duration);
+    
+    return results;
+
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    const logger = require('../logger');
+    
+    logger.logError(error, {
+      type: 'database',
+      query: sanitizedSql,
+      params: sanitizedParams,
+      duration: `${duration}ms`
+    });
+
+    throw error;
+  }
+}
   async getID(connection, key, value, table) {
-    const [rows] = await connection.execute(`SELECT id FROM ${table} WHERE ${key}=?`, [value]);
-    if (rows.length > 0) {
-      return rows[0].id;
+    // Whitelist valid tables/columns
+    const validTables = ['menu', 'user', 'franchise', 'store'];
+    const validColumns = ['id', 'name', 'email'];
+    
+    if (!validTables.includes(table) || !validColumns.includes(key)) {
+      throw new Error('Invalid table or column name');
     }
-    throw new Error('No ID found');
+    
+    const [rows] = await connection.execute(`SELECT id FROM ${table} WHERE ${key} = ?`, [value]);
+    return rows.length > 0 ? rows[0].id : null;
   }
   async getConnection() {
     // Make sure the database is initialized before trying to get a connection.

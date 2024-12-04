@@ -111,6 +111,37 @@ orderRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
+
+    // Validate franchise and store exist
+    const franchise = await DB.getFranchise({ id: orderReq.franchiseId });
+    if (!franchise) {
+      throw new StatusCodeError('Invalid franchise', 400);
+    }
+    
+    const storeExists = franchise.stores.some(s => s.id === Number(orderReq.storeId));
+    if (!storeExists) {
+      throw new StatusCodeError('Invalid store for franchise', 400);
+    }
+
+    // Validate items against menu
+    const menu = await DB.getMenu();
+    for (const item of orderReq.items) {
+      const menuItem = menu.find(m => m.id === item.menuId);
+      if (!menuItem) {
+        throw new StatusCodeError(`Item ${item.menuId} not on menu`, 400);
+      }
+      // Verify description matches
+      if (menuItem.description !== item.description) {
+        throw new StatusCodeError(`Invalid description for menu item ${item.menuId}`, 400);
+      }
+      // Compare price with small tolerance for floating point
+      if (Math.abs(menuItem.price - item.price) > 0.000001) {
+        throw new StatusCodeError('Price mismatch detected', 400); 
+      }
+      // Use verified price from menu
+      item.price = menuItem.price;
+    }
+
     const order = await DB.addDinerOrder(req.user, orderReq);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
