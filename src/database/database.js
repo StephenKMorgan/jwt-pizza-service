@@ -241,20 +241,35 @@ class DB {
       connection.end();
     }
   }
-  async getFranchise(franchise) {
-    const connection = await this.getConnection();
-    try {
-      franchise.admins = await this.query(connection, `SELECT u.id, u.name, u.email FROM userRole AS ur JOIN user AS u ON u.id=ur.userId WHERE ur.objectId=? AND ur.role='franchisee'`, [franchise.id]);
-      franchise.stores = await this.query(
-        connection,
-        `SELECT s.id, s.name, COALESCE(SUM(oi.price), 0) AS totalRevenue FROM dinerOrder AS do JOIN orderItem AS oi ON do.id=oi.orderId RIGHT JOIN store AS s ON s.id=do.storeId WHERE s.franchiseId=? GROUP BY s.id`,
-        [franchise.id]
-      );
-      return franchise;
-    } finally {
-      connection.end();
-    }
+// In database.js, update the query to use the correct column name
+async getFranchise(franchise) {
+  const connection = await this.getConnection();
+  try {
+    const admins = await this.query(
+      connection,
+      `SELECT u.id, u.name, u.email 
+       FROM userRole AS ur 
+       JOIN user AS u ON u.id=ur.userId 
+       WHERE ur.objectId=? AND ur.role=?`, 
+      [franchise.id, Role.Franchisee]  // Use Role.Franchisee instead of 'franchisee'
+    );
+    
+    franchise.admins = admins;
+    franchise.stores = await this.query(
+      connection,
+      `SELECT s.id, s.name, COALESCE(SUM(oi.price), 0) AS totalRevenue 
+       FROM store AS s
+       LEFT JOIN dinerOrder AS do ON s.id=do.storeId
+       LEFT JOIN orderItem AS oi ON do.id=oi.orderId
+       WHERE s.franchiseId=?
+       GROUP BY s.id`,
+      [franchise.id]
+    );
+    return franchise;
+  } finally {
+    connection.end();
   }
+}
   async createStore(franchiseId, store) {
     const connection = await this.getConnection();
     try {
