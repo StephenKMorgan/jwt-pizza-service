@@ -299,14 +299,14 @@ async query(connection, sql, params) {
   const startTime = Date.now();
   const queryTimeout = 5000; // 5 seconds
 
-  // Sanitize inputs
+  // Sanitize inputs using this.sanitizeValue
   const sanitizedSql = this.sanitizeValue(sql);
   const sanitizedParams = Array.isArray(params) 
-    ? params.map(sanitizeValue)
+    ? params.map(p => this.sanitizeValue(p))
     : params;
 
   try {
-    // Create timeout promise
+    // Create timeout promise 
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('Query timeout')), queryTimeout)
     );
@@ -327,7 +327,7 @@ async query(connection, sql, params) {
 
   } catch (error) {
     const duration = Date.now() - startTime;
-    const logger = require('../logger');
+    const logger = require('../logger'); 
     
     logger.logError(error, {
       type: 'database',
