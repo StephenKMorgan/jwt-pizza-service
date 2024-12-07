@@ -61,11 +61,17 @@ I anticipated and protected myself against the following security attacks:
 **Tester:** James Finlinson
 **Tools Used:** Burp Suite
 
-### Security Misconfiguration
+#### Security Misconfiguration
 
-I was able to exploit the default admin credentials `a@jwt.com` to obtain access to the admin dashboard, and **change the admin password**. This removed the admin's ability to login properly and may have required a reset of the system to regain admin access.
-
-<img src="./admin-credentials-screenshot.png" width="50%" alt="Successful Admin Credential Login">
+| Item | Details |
+|------|---------|
+| Date | 12/6/2024 |
+| Target | https://pizza-service.kepelcomputing.com/api/auth/1 |
+| Classification | Security Misconfiguration |
+| Severity | High |
+| Description | Exposed default database credentials allow immediate and easy admin access. I removed the root access by changing the password to my own, and could have gone further to delete or modify or change other sensitive portions of the database. |
+| Images | <img src="./admin-credentials-screenshot.png" width="100%" max alt="Successful Admin Credential Login">  |
+| Corrections | Change default admin credentials. |
 
 ### Agaist James (wheatharvest.llc)
 
