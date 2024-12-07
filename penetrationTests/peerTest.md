@@ -56,10 +56,10 @@ I anticipated and protected myself against the following security attacks:
 
 ### Against Stephen (kepelcomputing.com)
 
-**Target:** https://pizza.kepelcomputing.com  
-**Date:** 12/5/2024  
-**Tester:** James Finlinson  
-**Tools Used:** Burp Suite  
+**Target:** https://pizza.kepelcomputing.com
+**Date:** 12/5/2024
+**Tester:** James Finlinson
+**Tools Used:** Burp Suite
 
 ### Security Misconfiguration
 
@@ -71,10 +71,10 @@ I was able to exploit the default admin credentials `a@jwt.com` to obtain access
 
 #### Report 1: Pizza Wheat Harvest Security Assessment
 
-**Target:** https://pizza.wheatharvest.llc  
-**Date:** 12/6/2024  
-**Tester:** Stephen Morgan  
-**Tools Used:** Burp Suite  
+**Target:** https://pizza.wheatharvest.llc
+**Date:** 12/6/2024
+**Tester:** Stephen Morgan
+**Tools Used:** Burp Suite
 
 #### Executive Summary
 Security assessment was performed on the pizza ordering application. No critical vulnerabilities were identified during testing.
