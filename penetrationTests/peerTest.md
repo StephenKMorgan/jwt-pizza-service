@@ -1,14 +1,9 @@
 # Penetration Peer Testing
 
-## Participants
-
-Partner 1:
-- Name: James Finlinson
-- URL: https://pizza.wheatharvest.llc
-
-Partner 2:
-- Name: Stephen Morgan
-- URL: https://pizza.kepelcomputing.com/
+| Participant         | System URL                        | JWT Pizza Service Repo                              |
+| ------------------- | --------------------------------- | --------------------------------------------------- |
+| **James Finlinson** | https://pizza.wheatharvest.llc    | https://github.com/frozenfrank/jwt-pizza-service/   |
+| **Stephen Morgan**  | https://pizza.kepelcomputing.com  | https://github.com/StephenKMorgan/jwt-pizza-service |
 
 ## Self Attack
 
