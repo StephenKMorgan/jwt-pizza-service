@@ -83,6 +83,7 @@ No other meaningful vulnerabilities were detected in the target system. Attempte
     ![kepelcomputing authtoken entropy analysis](./kepelcomputing-authtoken-entropy.jpeg)
 
 * Reuse originally retrieved valid admin auth token. _AuthTokens set to expire after 1 hour._
+* Analyzed generability of auth tokens. _Discovered that multiple auth tokens generated at the same time will have the same value and produce an error, but otherwise the auth tokens cannot be predicted. See the [sample errors received](./kepelcomputing-duplicate-auth-keys-sample.txt)._
 
 ### Against James (wheatharvest.llc)
 
