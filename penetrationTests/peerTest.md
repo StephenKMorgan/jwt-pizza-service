@@ -20,6 +20,11 @@ I anticipated and protected myself against the following security attacks:
 | Software Integrity Failures | **Low** | `npm` reported multiple times that my dependencies had vulnerabilities. I ran the update scripts to upgrade properly. | ee912a2 |
 | Insecure Design | **Medium** | System did not enforce uniqueness of emails. Also, users can change their emails without any validation. This means that a user who signed up earlier in time to another user, could change their email and cause a DoS attack on another specific individual. | 9247c1d |
 
+I also performed the following safety checks:
+* Analyzed uniqueness of auth tokens. _They have sufficient entropy._
+
+    ![wheatharvest.llc authtoken entropy analysis](./wheatharvest-authtoken-entropy.png)
+
 ### Stephen Morgan
 
 #### Finding 1
@@ -80,7 +85,7 @@ No other meaningful vulnerabilities were detected in the target system. Attempte
 * Generated a blanket of automated traffic to mask penetration attempts.
 * Analyzed uniqueness of auth tokens. _They have sufficient entropy._
 
-    ![kepelcomputing authtoken entropy analysis](./kepelcomputing-authtoken-entropy.jpeg)
+    ![kepelcomputing.com authtoken entropy analysis](./kepelcomputing-authtoken-entropy.jpeg)
 
 * Reuse originally retrieved valid admin auth token. _AuthTokens set to expire after 1 hour._
 * Analyzed generability of auth tokens. _Discovered that multiple auth tokens generated at the same time will have the same value and produce an error, but otherwise the auth tokens cannot be predicted. See the [sample errors received](./kepelcomputing-duplicate-auth-keys-sample.txt)._
