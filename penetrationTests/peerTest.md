@@ -57,10 +57,10 @@ I also performed the following safety checks:
 
 ### Against Stephen (kepelcomputing.com)
 
-**Target:** https://pizza.kepelcomputing.com
-**Date:** 12/5/2024
-**Tester:** James Finlinson
-**Tools Used:** Burp Suite
+**Target:** https://pizza.kepelcomputing.com  
+**Date:** 12/5/2024  
+**Tester:** James Finlinson  
+**Tools Used:** Burp Suite  
 
 #### Security Misconfiguration
 
@@ -90,14 +90,14 @@ No other meaningful vulnerabilities were detected in the target system. Attempte
 * Reuse originally retrieved valid admin auth token. _AuthTokens set to expire after 1 hour._
 * Analyzed generability of auth tokens. _Discovered that multiple auth tokens generated at the same time will have the same value and produce an error, but otherwise the auth tokens cannot be predicted. See the [sample errors received](./kepelcomputing-duplicate-auth-keys-sample.txt)._
 
-### Against James (wheatharvest.llc)
+---
 
-#### Report 1: Pizza Wheat Harvest Security Assessment
+### Against James Pizza Wheat Harvest Security Assessment
 
-**Target:** https://pizza.wheatharvest.llc
-**Date:** 12/6/2024
-**Tester:** Stephen Morgan
-**Tools Used:** Burp Suite
+**Target:** https://pizza.wheatharvest.llc  
+**Date:** 12/6/2024  
+**Tester:** Stephen Morgan  
+**Tools Used:** Burp Suite  
 
 #### Executive Summary
 
