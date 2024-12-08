@@ -71,7 +71,7 @@ I also performed the following safety checks:
 | Classification | Security Misconfiguration |
 | Severity | High |
 | Description | Exposed default database credentials allow immediate and easy admin access. I removed the root access by changing the password to my own, and could have gone further to delete or modify or change other sensitive portions of the database. |
-| Images | <img src="./admin-credentials-screenshot.png" width="100%" max alt="Successful Admin Credential Login">  |
+| Images | <img src="./frozenfrank-admin-credentials-secured-screenshot.png" width="100%" max alt="Successful Admin Credential Login">  |
 | Corrections | Change default admin credentials. |
 
 #### Additional Attempts
