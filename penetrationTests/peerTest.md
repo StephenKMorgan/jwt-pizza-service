@@ -34,7 +34,7 @@ I anticipated and protected myself against the following security attacks:
 | Target | https://pizza.kepelcomputing.com/menu |
 | Classification | Injection |
 | Severity | High |
-| Description | SQL injection possiable in the curl updateUser command |
+| Description | SQL injection possible in the curl updateUser command |
 | Images | const query = `UPDATE user SET ${params.join(', ')} WHERE id=${userId}`; This directly interpolates values into the SQL string, thus direct array interpolation could be exploited.  |
 | Corrections | Added sanitization to Database.js to avoid injection attacks |
 
@@ -73,7 +73,7 @@ I anticipated and protected myself against the following security attacks:
 | Images | <img src="./admin-credentials-screenshot.png" width="100%" max alt="Successful Admin Credential Login">  |
 | Corrections | Change default admin credentials. |
 
-### Agaist James (wheatharvest.llc)
+### Against James (wheatharvest.llc)
 
 #### Report 1: Pizza Wheat Harvest Security Assessment
 
@@ -83,42 +83,50 @@ I anticipated and protected myself against the following security attacks:
 **Tools Used:** Burp Suite
 
 #### Executive Summary
+
 Security assessment was performed on the pizza ordering application. No critical vulnerabilities were identified during testing.
 
 #### Test Methodology & Results
 
 ##### 1. SQL Injection Testing
+
 - **Approach:** Attempted SQL injection via input fields
 - **Result:** No vulnerabilities detected
 - **Status:** SECURE
 
 ##### 2. SSRF Testing
+
 - **Approach:** Attempted server-side request forgery
 - **Result:** No vulnerabilities detected
 - **Status:** SECURE
 
 ##### 3. Access Control Testing
+
 - **Approach:** Analyzed for broken access control patterns
 - **Result:** No vulnerabilities detected
 - **Status:** SECURE
 
 ##### 4. Cryptographic Implementation
+
 - **Approach:** Analyzed responses for cryptographic weaknesses
 - **Result:** No obvious cryptographic failures detected
 - **Status:** SECURE
 
 ##### 5. Load Testing/DoS
+
 - **Approach:** Attempted large volume of orders
 - **Result:** System showed error under load
 - **Note:** Error originated from pizza factory backend, not the application
 - **Status:** PARTIAL CONCERN - Consider implementing rate limiting
 
 #### Recommendations
+
 1. Consider implementing order volume limits
 2. Add rate limiting for order submissions
 3. Continue monitoring for potential DoS vulnerabilities
 
 #### Conclusion
+
 The application shows good security implementation across tested vectors. The only notable finding was related to order volume handling, which is a backend service concern rather than an application security issue.
 
 
