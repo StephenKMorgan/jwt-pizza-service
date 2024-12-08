@@ -5,7 +5,7 @@
 | **James Finlinson** | https://pizza.wheatharvest.llc    | https://github.com/frozenfrank/jwt-pizza-service/   |
 | **Stephen Morgan**  | https://pizza.kepelcomputing.com  | https://github.com/StephenKMorgan/jwt-pizza-service |
 
-## Self Attack
+## Self Attacks
 
 ### James Finlinson (wheatharvest.llc)
 
@@ -24,8 +24,8 @@ I also performed the following safety checks:
 * Analyzed uniqueness of auth tokens. _They have sufficient entropy._
 
     ![wheatharvest.llc authtoken entropy analysis](./wheatharvest-authtoken-entropy.png)
-
-### Stephen Morgan
+---
+### Stephen Morgan (kepelcomputing.com)
 
 #### Finding 1
 
