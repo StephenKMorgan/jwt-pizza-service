@@ -18,6 +18,7 @@ I anticipated and protected myself against the following security attacks:
 | Authentication Failure | **Low** | AuthTokens used to be deterministic by the incoming request. This did allow requests to bypass extant-franchise requirements. There was low actual impact of this because no valuable targets were exposed by this vulnerability. | f322e8d, af7f566 |
 | Insecure Design | **Medium** | Order processing did not validate menu prices and allow cheaper or negatively priced pizzas. This would have impacted profits for a business. | b1ed785, 407c845 |
 | Software Integrity Failures | **Low** | `npm` reported multiple times that my dependencies had vulnerabilities. I ran the update scripts to upgrade properly. | ee912a2 |
+| Insecure Design | **Medium** | System did not enforce uniqueness of emails. Also, users can change their emails without any validation. This means that a user who signed up earlier in time to another user, could change their email and cause a DoS attack on another specific individual. | 9247c1d |
 
 ### Stephen Morgan
 
@@ -67,6 +68,21 @@ I anticipated and protected myself against the following security attacks:
 | Description | Exposed default database credentials allow immediate and easy admin access. I removed the root access by changing the password to my own, and could have gone further to delete or modify or change other sensitive portions of the database. |
 | Images | <img src="./admin-credentials-screenshot.png" width="100%" max alt="Successful Admin Credential Login">  |
 | Corrections | Change default admin credentials. |
+
+#### Additional Attempts
+
+No other meaningful vulnerabilities were detected in the target system. Attempted attack vectors include:
+* Scanning for unprotected endpoints. _None found._
+* Ordering pizzas with discounted pizza prices. _Request validated by server._
+* Ordering pizzas with negative pizza prices. _Request validated by server._
+* Registering users with the same email as the admin. _User created, but could not login afterwards._
+* Changing my user to have the default admin email address. _Did not grant access._
+* Generated a blanket of automated traffic to mask penetration attempts.
+* Analyzed uniqueness of auth tokens. _They have sufficient entropy._
+
+    ![kepelcomputing authtoken entropy analysis](./kepelcomputing-authtoken-entropy.jpeg)
+
+* Reuse originally retrieved valid admin auth token. _AuthTokens set to expire after 1 hour._
 
 ### Against James (wheatharvest.llc)
 
@@ -128,3 +144,15 @@ The application shows good security implementation across tested vectors. The on
 ## Combined summary of learnings
 
 Through our cross-team penetration testing efforts, we identified several key vulnerabilities in JWT Pizza deployments, including SQL injection vulnerabilities that could compromise menu data and server-side request forgery that allowed order price manipulation. While some systems showed robust security measures against common attack vectors, others revealed the need for enhanced input sanitization and server-side validation. The testing exercise highlighted the importance of implementing proper input validation, rate limiting for order submissions, and regular security audits. These findings led to immediate improvements in our codebase, including enhanced Database.js sanitization and strengthened orderRouter.js validation, ultimately resulting in more secure pizza ordering systems across all deployments.
+
+Overall, we individually did a good job identifying and preventing attacks against our systems. No other exploitable details were found. One key lesson is that software security can be achieved with a reasonable degree of confidence just by following the standard best practices.
+
+## Recommendation
+
+Other than the items we each fixed, which were few in number, the application overall felt very secure.
+
+We would recommend using the penetration attempts from current semester students to **expose additional _actual_ vulnerabilities** for students to find or attack next semester. Ideas include:
+* Widespread use of string interpolation to enable SQL injection attacks
+* Adjust the default behavior of `database:getUser()` to retrieve the _last_ user with an email rather than the first.
+* Omit the authentication checks from some obscure endpoints. I.E. Omit the `authRouter.authenticateToken,` line from the endpoints in the routers.
+* Include sensitive information in standard GET requests like `getFranchises()`.
