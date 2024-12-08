@@ -44,7 +44,7 @@ I anticipated and protected myself against the following security attacks:
 | Classification | Broken Access Control |
 | Severity | Critical |
 | Description | Server-side request forgery allowed the user to modify the order request and change the price |
-| Images | <img src="./CS%20329%20Order%20Error.png" width="50%" alt="SQL Error"><br>The price is larger and negative |
+| Images | <img src="./stephenmorgan-menu-price-exploit.png" width="50%" alt="SQL Error"><br>The price is larger and negative |
 | Corrections | Added server-side validation of orders in orderRouter.js |
 
 
