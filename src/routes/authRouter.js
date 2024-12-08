@@ -1,11 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const config = require('../config.js');
-const { asyncHandler } = require('../endpointHelper.js');
+const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
-
 const authRouter = express.Router();
-
 authRouter.endpoints = [
   {
     method: 'POST',
@@ -37,7 +35,16 @@ authRouter.endpoints = [
     example: `curl -X DELETE localhost:3000/api/auth -H 'Authorization: Bearer tttttt'`,
     response: { message: 'logout successful' },
   },
+  {
+    method: 'PUT',
+    path : '/api/auth/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable or disable chaos',
+    example: `curl -X PUT localhost:3000/api/auth/chaos`,
+    response: { chaos: true}
+  },
 ];
+let enableChaos = false;
 
 async function setAuthUser(req, res, next) {
   const token = readAuthToken(req);
@@ -62,12 +69,35 @@ authRouter.authenticateToken = (req, res, next) => {
   }
   next();
 };
+// Emergency chaos disable - no auth required
+authRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
+// chaos
+authRouter.put(
+  '/chaos/:state',
+  authRouter.authenticateToken,
+  asyncHandler(async (req, res) => {
+    if (!req.user.isRole(Role.Admin)) {
+      throw new StatusCodeError('unknown endpoint', 404);
+    }
 
+    enableChaos = req.params.state === 'true';
+    res.json({ chaos: enableChaos });
+  })
+);
 // register
 authRouter.post(
   '/',
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
+    if (enableChaos) {
+      return res.status(500).json({ message: 'chaos monkey' });
+    }
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'name, email, and password are required' });
     }
@@ -76,28 +106,29 @@ authRouter.post(
     res.json({ user: user, token: auth });
   })
 );
-
 // login
 authRouter.put(
   '/',
   asyncHandler(async (req, res) => {
+    if (enableChaos) {
+      //sleep for 30 seconds
+      await new Promise((resolve) => setTimeout(resolve, 30000));
+    }
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
     res.json({ user: user, token: auth });
   })
 );
-
 // logout
 authRouter.delete(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    clearAuth(req);
+    await clearAuth(req);
     res.json({ message: 'logout successful' });
   })
 );
-
 // updateUser
 authRouter.put(
   '/:userId',
@@ -109,25 +140,25 @@ authRouter.put(
     if (user.id !== userId && !user.isRole(Role.Admin)) {
       return res.status(403).json({ message: 'unauthorized' });
     }
-
     const updatedUser = await DB.updateUser(userId, email, password);
     res.json(updatedUser);
   })
 );
-
 async function setAuth(user) {
-  const token = jwt.sign(user, config.jwtSecret);
+
+  const token = jwt.sign(user, config.jwtSecret, {
+    algorithm: 'HS256',
+    expiresIn: '1h'
+  });
   await DB.loginUser(user.id, token);
   return token;
 }
-
 async function clearAuth(req) {
   const token = readAuthToken(req);
   if (token) {
     await DB.logoutUser(token);
   }
 }
-
 function readAuthToken(req) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
@@ -135,5 +166,4 @@ function readAuthToken(req) {
   }
   return null;
 }
-
 module.exports = { authRouter, setAuthUser };

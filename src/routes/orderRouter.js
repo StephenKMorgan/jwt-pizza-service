@@ -38,12 +38,45 @@ orderRouter.endpoints = [
     example: `curl -X POST localhost:3000/api/order -H 'Content-Type: application/json' -d '{"franchiseId": 1, "storeId":1, "items":[{ "menuId": 1, "description": "Veggie", "price": 0.05 }]}'  -H 'Authorization: Bearer tttttt'`,
     response: { order: { franchiseId: 1, storeId: 1, items: [{ menuId: 1, description: 'Veggie', price: 0.05 }], id: 1 }, jwt: '1111111111' },
   },
+  {
+    method: 'PUT',
+    path: '/api/order/chaos/:state',
+    requiresAuth: true,
+    description: 'Enable or disable chaos',
+    example: `curl -X PUT localhost:3000/api/order/chaos/true -H 'Authorization'`,
+    response: { chaos: true },
+  }
 ];
 
+let enableChaos = false;
+// Emergency chaos disable - no auth required
+orderRouter.put(
+  '/chaos/disable',
+  asyncHandler(async (req, res) => {
+    enableChaos = false;
+    res.json({ chaos: enableChaos });
+  })
+);
+// enableChaos
+orderRouter.put(
+  '/chaos/:state',
+  authRouter.authenticateToken,
+  asyncHandler(async (req, res) => {
+    if (!req.user.isRole(Role.Admin)) {
+      throw new StatusCodeError('unknown endpoint', 404);
+    }
+
+    enableChaos = req.params.state === 'true';
+    res.json({ chaos: enableChaos });
+  })
+);
 // getMenu
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
+    if (enableChaos) {
+      await new Promise((resolve) => setTimeout(resolve, 30000));
+    }
     res.send(await DB.getMenu());
   })
 );
@@ -78,6 +111,37 @@ orderRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
+
+    // Validate franchise and store exist
+    const franchise = await DB.getFranchise({ id: orderReq.franchiseId });
+    if (!franchise) {
+      throw new StatusCodeError('Invalid franchise', 400);
+    }
+    
+    const storeExists = franchise.stores.some(s => s.id === Number(orderReq.storeId));
+    if (!storeExists) {
+      throw new StatusCodeError('Invalid store for franchise', 400);
+    }
+
+    // Validate items against menu
+    const menu = await DB.getMenu();
+    for (const item of orderReq.items) {
+      const menuItem = menu.find(m => m.id === item.menuId);
+      if (!menuItem) {
+        throw new StatusCodeError(`Item ${item.menuId} not on menu`, 400);
+      }
+      // Verify description matches
+      // if (menuItem.description !== item.description) {
+      //   throw new StatusCodeError(`Invalid description for menu item ${item.menuId}`, 400);
+      // }
+      // Compare price with small tolerance for floating point
+      if (Math.abs(menuItem.price - item.price) > 0.000001) {
+        throw new StatusCodeError('Price mismatch detected', 400); 
+      }
+      // Use verified price from menu
+      item.price = menuItem.price;
+    }
+
     const order = await DB.addDinerOrder(req.user, orderReq);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
